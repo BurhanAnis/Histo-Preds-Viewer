@@ -1,6 +1,7 @@
 // app.js
 
-const slidesIndexUrl = "slides_index.json";
+const slidesIndexUrl =
+  (window.APP_CONFIG && window.APP_CONFIG.SLIDES_INDEX_URL) || "slides_index.json";
 
 let viewer;
 

@@ -9,38 +9,74 @@
 </head>
 
 <body>
-  <header>
+  <!-- Top bar -->
+  <header class="topbar">
     <div class="brand">Histopathology Viewer</div>
-    <div class="controls">
-      <label class="select-wrap">
-        <span>Slide</span>
-        <select id="slideSelect"></select>
-      </label>
-
-      <button id="toggle">Toggle Heatmap</button>
-
-      <label class="range-wrap">
-        <span>Opacity</span>
-        <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.5" />
-      </label>
-
-      <button id="toggleGT">Toggle Ground Truth</button>
-
-      <!-- New: FP/FN controls -->
-      <button id="toggleFPFN">Show FP/FN</button>
-      <label class="range-wrap">
-        <span>Threshold</span>
-        <input type="range" id="thresh" min="0" max="1" step="0.01" value="0.5" />
-        <input type="number" id="threshNum" min="0" max="1" step="0.01" value="0.5" style="width:4.2rem" />
-      </label>
-
-      <span id="status" class="status">ready</span>
-    </div>
+    <button id="drawerToggle" class="btn-ghost" title="Open controls">Controls</button>
   </header>
+
+  <!-- Scrim behind drawer (click to close) -->
+  <div id="drawerScrim" class="drawer-scrim"></div>
+
+  <!-- Right-side drawer with all controls (same IDs as before) -->
+  <aside id="drawer" class="drawer" aria-label="Controls">
+    <div class="drawer-header">
+      <div class="drawer-title">Controls</div>
+      <button id="drawerClose" class="btn-ghost" title="Close controls">✕</button>
+    </div>
+
+    <div class="controls">
+      <!-- Slide -->
+      <div class="card">
+        <div class="card-title">Slide</div>
+        <label class="select-wrap" title="Pick a test slide">
+          <span>Choose</span>
+          <select id="slideSelect"></select>
+        </label>
+      </div>
+
+      <!-- Prediction heatmap -->
+      <div class="card">
+        <div class="card-title">Prediction</div>
+        <button id="toggle" title="Show/Hide model heatmap">Show / Hide Heatmap</button>
+        <label class="range-wrap" title="Adjust overlay strength">
+          <span>Opacity</span>
+          <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <small class="hint">Classic heatmap over the slide.</small>
+      </div>
+
+      <!-- Ground truth -->
+      <div class="card">
+        <div class="card-title">Ground Truth</div>
+        <button id="toggleGT" title="Show/Hide GT regions">Toggle GT</button>
+        <small class="hint">GT shown as red blocks.</small>
+      </div>
+
+      <!-- Errors (FP/FN) -->
+      <div class="card">
+        <div class="card-title">Errors</div>
+        <button id="toggleFPFN" title="Show false positives / negatives">Show FP/FN</button>
+        <label class="range-wrap" title="Probability threshold for positives">
+          <span>Threshold</span>
+          <input type="range" id="thresh" min="0" max="1" step="0.01" value="0.5" />
+          <input type="number" id="threshNum" min="0" max="1" step="0.01" value="0.5" />
+        </label>
+        <small class="hint">FP = amber, FN = cyan.</small>
+      </div>
+
+      <!-- Status -->
+      <div class="card status-card">
+        <div class="card-title">Status</div>
+        <span id="status" class="status">ready</span>
+      </div>
+    </div>
+  </aside>
 
   <main>
     <div id="viewer"></div>
 
+    <!-- toast for quick messages -->
     <div id="toast" class="toast"></div>
 
     <!-- Heatmap legend -->
@@ -52,6 +88,7 @@
       </div>
     </div>
 
+    <!-- FP/FN legend -->
     <div id="legend-fpfn" class="legend legend-fpfn">
       <div class="legend-title">Errors (τ=<span id="legend-thresh">0.50</span>)</div>
       <div class="legend-rows">

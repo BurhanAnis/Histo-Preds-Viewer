@@ -341,6 +341,21 @@ async function init() {
   const thresh = document.getElementById("thresh");
   const threshNum = document.getElementById("threshNum");
 
+    // Drawer wiring
+  const drawer = document.getElementById("drawer");
+  const drawerToggle = document.getElementById("drawerToggle");
+  const drawerClose = document.getElementById("drawerClose");
+  const drawerScrim = document.getElementById("drawerScrim");
+
+  function openDrawer()  { document.body.classList.add("drawer-open"); }
+  function closeDrawer() { document.body.classList.remove("drawer-open"); }
+
+  drawerToggle.addEventListener("click", openDrawer);
+  drawerClose.addEventListener("click", closeDrawer);
+  drawerScrim.addEventListener("click", closeDrawer);
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+
   // prediction heatmap toggle + opacity
   toggle.addEventListener("click", () => {
     overlayVisible = !overlayVisible;

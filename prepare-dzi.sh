@@ -46,8 +46,10 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
 
   OVERLAY_PNG="slides/$SID/overlay.png"
   GT_JSON="slides/$SID/gt_patches.json"
+  PATCHES_JSON="slides/$SID/patches_index.json"
   [ -f "$OVERLAY_PNG" ] || { echo "Missing $OVERLAY_PNG"; exit 1; }
   [ -f "$GT_JSON" ] || { echo "Missing $GT_JSON"; exit 1; }
+  [ -f "$PATCHES_JSON" ] || { echo "Missing $PATCHES_JSON"; exit 1; }
 
   # 3) OVERLAY tiles
   vips dzsave "$OVERLAY_PNG" \
@@ -55,15 +57,16 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
     --tile-size=$TILE --overlap=$OVERLAP --suffix=.png
 
   # 4) Per-slide manifest (includes tiny GT index JSON)
-  cat > "slides/$SID/manifest.json" <<EOF
+cat > "slides/$SID/manifest.json" <<EOF
 {
   "id": "$SID",
   "name": "$SID",
   "tileSize": $TILE,
   "overlap": $OVERLAP,
-  "base":    { "dzi": "./base.dzi" },
-  "overlay": { "dzi": "./overlay.dzi", "alpha": 0.5, "valueRange": [0, 1] },
-  "gtIndex": "./gt_patches.json"
+  "base":        { "dzi": "./base.dzi" },
+  "overlay":     { "dzi": "./overlay.dzi", "alpha": 0.5, "valueRange": [0,1] },
+  "gtIndex":     "./gt_patches.json",
+  "patchesIndex":"./patches_index.json"
 }
 EOF
 

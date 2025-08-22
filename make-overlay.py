@@ -120,3 +120,18 @@ gt_json = {
 
 with open(out_dir / "gt_patches.json", "w") as f:
     json.dump(gt_json, f, separators=(",", ":"))
+
+prob_scale = 1000
+patch_rows = []
+for (y, x, is_tumour), p in zip(patches, probs):
+    patch_rows.append([int(y), int(x), int(round(float(p) * prob_scale)), int(bool(is_tumour))])
+
+patches_json = {
+    "schema": "patches_v1",
+    "patch_size": int(P),
+    "image_size": [int(H2), int(W2)],
+    "prob_scale": prob_scale,
+    "patches": patch_rows
+}
+with open(out_dir / "patches_index.json", "w") as f:
+    json.dump(patches_json, f, separators=(",", ":"))

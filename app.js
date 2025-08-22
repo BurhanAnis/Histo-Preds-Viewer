@@ -122,8 +122,8 @@ function drawGTOverlay() {
   const imgMaxY = Math.max(imgTL.y, imgBR.y);
 
   gtCtx.globalAlpha = 0.35;
-  gtCtx.fillStyle = "#00ff00";
-  gtCtx.strokeStyle = "#00a000";
+  gtCtx.fillStyle = "#ff0000";   // solid red
+  gtCtx.strokeStyle = "#a00000"; // darker red outline
   gtCtx.lineWidth = 1;
 
   for (let i = 0; i < tumour.length; i++) {
@@ -138,6 +138,14 @@ function drawGTOverlay() {
     // gtCtx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
   }
   gtCtx.globalAlpha = 1.0;
+}
+
+function showToast(msg, duration=2000) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), duration);
 }
 
 // ---------- core ----------
@@ -215,6 +223,10 @@ async function init() {
   });
 
   toggleGT.addEventListener("click", () => {
+    if (!gtIndex || (gtIndex.tumour || []).length === 0) {
+      showToast("This is a non-tumor slide");
+      return;
+    }
     overlayGTVisible = !overlayGTVisible;
     drawGTOverlay();
   });

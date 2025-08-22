@@ -80,3 +80,23 @@ main { position: relative; }
   pointer-events: none;
   z-index: 5; /* above tiles, below navigator/tooltips */
 }
+
+
+.toast {
+  position: absolute;
+  top: 20px;
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: .5rem .9rem;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+.toast.show {
+  opacity: 1;
+}

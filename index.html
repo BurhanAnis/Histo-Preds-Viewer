@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WSI + Heatmap Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.1/openseadragon.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand">Histopathology Viewer</div>
+    <div class="controls">
+      <label class="select-wrap">
+        <span>Slide</span>
+        <select id="slideSelect"></select>
+      </label>
+      <button id="toggle">Toggle Heatmap</button>
+      <label class="range-wrap">
+        <span>Opacity</span>
+        <input type="range" id="opacity" min="0" max="1" step="0.01" value="0.5" />
+      </label>
+      <span id="status" class="status">ready</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="viewer"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+

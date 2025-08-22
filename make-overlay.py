@@ -4,6 +4,31 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+def heatmap_rgb(v: np.ndarray):
+    """
+    Classic heatmap/jet-like mapping for v in [0,1].
+    Returns (r,g,b) uint8 arrays.
+    """
+    v = np.clip(v, 0.0, 1.0)
+
+    # piecewise "jet-ish" mapping
+    def ramp(x):
+        return np.clip(x, 0.0, 1.0)
+
+    r = ramp(1.5*v - 0.5) + ramp(1.5*v - 1.0)  # rises from yellow to red
+    g = ramp(1.5*v) - ramp(1.5*v - 1.0)        # peaks around green/yellow
+    b = ramp(1.5*(1.0 - v))                    # high at low v (blue)
+
+    # normalize to [0,1]
+    r = np.clip(r, 0.0, 1.0)
+    g = np.clip(g, 0.0, 1.0)
+    b = np.clip(b, 0.0, 1.0)
+
+    r = (r * 255).astype(np.uint8)
+    g = (g * 255).astype(np.uint8)
+    b = (b * 255).astype(np.uint8)
+    return r, g, b
+
 def read_dzi_size(dzi_path):
     root = ET.parse(dzi_path).getroot()
     size = root.find('{http://schemas.microsoft.com/deepzoom/2008}Size')
@@ -11,23 +36,20 @@ def read_dzi_size(dzi_path):
     return int(size.attrib['Width']), int(size.attrib['Height'])
 
 def to_rgba_value_alpha(val):
-    """Blue→Red, alpha proportional to value [0..1]."""
+    """Classic heatmap colours; alpha proportional to value [0..1]."""
     v = np.clip(val, 0.0, 1.0)
-    r = (v * 255).astype(np.uint8)
-    g = np.zeros_like(r, dtype=np.uint8)
-    b = (255 - r).astype(np.uint8)
-    a = (v * 200).astype(np.uint8)  # up to ~200/255
+    r, g, b = heatmap_rgb(v)
+    a = (v * 200).astype(np.uint8)
     return np.stack([r, g, b, a], axis=-1)
 
 def to_rgba_mask_alpha(val, mask, opacity=160):
-    """Blue→Red, alpha = 0 outside mask; constant inside mask."""
+    """Classic heatmap colours; constant alpha inside mask, 0 outside."""
     v = np.clip(val, 0.0, 1.0)
-    r = (v * 255).astype(np.uint8)
-    g = np.zeros_like(r, dtype=np.uint8)
-    b = (255 - r).astype(np.uint8)
+    r, g, b = heatmap_rgb(v)
     a = np.zeros_like(r, dtype=np.uint8)
     a[mask] = np.uint8(opacity)
     return np.stack([r, g, b, a], axis=-1)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pkl', required=True)
@@ -37,7 +59,7 @@ parser.add_argument('--out-dir', required=True)
 parser.add_argument('--patch-size', type=int, default=256, help='patch size in L2 pixels')
 parser.add_argument('--alpha-mode', choices=['mask', 'value'], default='mask',
                     help='alpha strategy: "mask"=constant alpha on covered pixels, "value"=alpha proportional to prob')
-parser.add_argument('--opacity', type=int, default=160, help='opacity 0..255 when alpha-mode=mask')
+parser.add_argument('--opacity', type=int, default=180, help='opacity 0..255 when alpha-mode=mask')
 args = parser.parse_args()
 
 out_dir = Path(args.out_dir)

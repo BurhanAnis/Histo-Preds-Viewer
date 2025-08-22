@@ -43,3 +43,30 @@ button:hover { border-color: var(--accent); }
 .status.error { color: #ff6b6b; }
 
 
+.legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  background: rgba(23, 24, 26, 0.9);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .5rem .6rem;
+  display: inline-flex;
+  flex-direction: column;
+  gap: .35rem;
+  pointer-events: none; /* don't block viewer interactions */
+}
+
+.legend canvas {
+  display: block;
+  width: 256px;
+  height: 14px;
+  image-rendering: pixelated; /* crisp on scale */
+}
+
+.legend-ticks {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: .8rem;
+}

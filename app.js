@@ -1,3 +1,5 @@
+// app.js
+
 const slidesIndexUrl = "slides_index.json";
 
 let viewer;
@@ -12,16 +14,60 @@ async function getJSON(u) {
   try { return JSON.parse(t); }
   catch (e) { throw new Error(`Bad JSON in ${u}: ${e.message}\n${t}`); }
 }
+
 function resolveRelative(baseUrl, rel) {
   if (!rel) return rel;
   if (!rel.startsWith(".")) return rel; // already absolute or full URL
   const base = baseUrl.slice(0, baseUrl.lastIndexOf("/") + 1);
   return base + rel.replace(/^\.\//, "");
 }
+
 function setStatus(msg, cls = "") {
   const el = document.getElementById("status");
   el.textContent = msg;
   el.className = `status ${cls}`.trim();
+}
+
+// ---- heatmap mapping (JS mirror of Python) ----
+function clamp01(x) { return Math.min(1, Math.max(0, x)); }
+function ramp(x)    { return clamp01(x); }
+
+/**
+ * Classic heatmap/jet-ish mapping for v in [0,1].
+ * Returns [r,g,b] integers in 0..255.
+ * Mirrors the Python version used to bake overlay tiles.
+ */
+function heatmapRGB(v) {
+  v = clamp01(v);
+  const r = ramp(1.5 * v - 0.5) + ramp(1.5 * v - 1.0);
+  const g = ramp(1.5 * v) - ramp(1.5 * v - 1.0);
+  const b = ramp(1.5 * (1.0 - v));
+  return [
+    Math.round(clamp01(r) * 255),
+    Math.round(clamp01(g) * 255),
+    Math.round(clamp01(b) * 255),
+  ];
+}
+
+function drawColorbar() {
+  const c = document.getElementById("colorbar");
+  if (!c) return;
+  const ctx = c.getContext("2d", { willReadFrequently: false });
+  const w = c.width, h = c.height;
+
+  const img = ctx.createImageData(w, h);
+  for (let x = 0; x < w; x++) {
+    const v = x / (w - 1);
+    const [r, g, b] = heatmapRGB(v);
+    for (let y = 0; y < h; y++) {
+      const i = 4 * (y * w + x);
+      img.data[i + 0] = r;
+      img.data[i + 1] = g;
+      img.data[i + 2] = b;
+      img.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
 }
 
 // ---------- core ----------
@@ -75,6 +121,7 @@ async function init() {
     overlayVisible = !overlayVisible;
     if (overlayItem) overlayItem.setOpacity(overlayVisible ? Number(opacity.value) : 0);
   });
+
   opacity.addEventListener("input", (e) => {
     if (overlayItem && overlayVisible) overlayItem.setOpacity(Number(e.target.value));
   });
@@ -99,9 +146,15 @@ async function init() {
   // open first slide by default
   select.value = slides[0].manifest;
   await openFromManifest(select.value);
+
+  // draw the legend once the viewer is initialized
+  drawColorbar();
+
+  setStatus("ready");
 }
 
 init().catch(err => { console.error(err); setStatus(err.message, "error"); });
+
 
 
 

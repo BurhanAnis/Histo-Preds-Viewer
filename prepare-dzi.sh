@@ -41,8 +41,8 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
     --slide-id "$SID" \
     --base-dzi "slides/$SID/base.dzi" \
     --out-dir "slides/$SID" \
-    --alpha-mode value
-
+    --alpha-mode mask \
+    --opacity 180
   # If your script outputs a different filename, change this:
   OVERLAY_PNG="slides/$SID/overlay.png"
   [ -f "$OVERLAY_PNG" ] || { echo "Missing $OVERLAY_PNG"; exit 1; }

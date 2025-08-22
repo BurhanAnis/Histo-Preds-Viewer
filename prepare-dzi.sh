@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # ---- CONFIG ----
-IMG_ROOT="/Users/burhananis/phd-july25/images"           # where your test_*.tif live
-PKL="/Users/burhananis/phd-fully-supervised/level_2_results/level_2_exp4/slide_index_test.pkl"             # your predictions PKL
-SITE_ROOT="/Users/burhananis/pathology-viewer"           # web app root (has index.html/app.js)
+IMG_ROOT="/Users/burhananis/phd-july25/images"   # where your test_*.tif live
+PKL="/Users/burhananis/phd-fully-supervised/level_2_results/level_2_exp4/slide_index_test.pkl"
+SITE_ROOT="/Users/burhananis/pathology-viewer"   # web app root (has index.html/app.js)
 TILE=256
 OVERLAP=0
 
@@ -30,12 +30,12 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
 
   mkdir -p "slides/$SID"
 
-  # 1) BASE tiles from WSI level 2 (NO --depth=one)
+  # 1) BASE tiles from WSI level 2
   vips dzsave "${slide}[level=2]" \
     "slides/$SID/base" \
     --tile-size=$TILE --overlap=$OVERLAP --suffix=.png
 
-  # 2) OVERLAY PNG @ L2 (your script writes overlay_l2.png to out-dir)
+  # 2) OVERLAY PNG @ L2 (also writes gt_patches.json)
   python make-overlay.py \
     --pkl "$PKL" \
     --slide-id "$SID" \
@@ -43,16 +43,18 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
     --out-dir "slides/$SID" \
     --alpha-mode mask \
     --opacity 180
-  # If your script outputs a different filename, change this:
-  OVERLAY_PNG="slides/$SID/overlay.png"
-  [ -f "$OVERLAY_PNG" ] || { echo "Missing $OVERLAY_PNG"; exit 1; }
 
-  # 3) OVERLAY tiles (NO --depth=one)
+  OVERLAY_PNG="slides/$SID/overlay.png"
+  GT_JSON="slides/$SID/gt_patches.json"
+  [ -f "$OVERLAY_PNG" ] || { echo "Missing $OVERLAY_PNG"; exit 1; }
+  [ -f "$GT_JSON" ] || { echo "Missing $GT_JSON"; exit 1; }
+
+  # 3) OVERLAY tiles
   vips dzsave "$OVERLAY_PNG" \
     "slides/$SID/overlay" \
     --tile-size=$TILE --overlap=$OVERLAP --suffix=.png
 
-  # 4) Per-slide manifest
+  # 4) Per-slide manifest (includes tiny GT index JSON)
   cat > "slides/$SID/manifest.json" <<EOF
 {
   "id": "$SID",
@@ -60,7 +62,8 @@ find "$IMG_ROOT" -type f -name 'test_*.tif' -print0 | while IFS= read -r -d '' s
   "tileSize": $TILE,
   "overlap": $OVERLAP,
   "base":    { "dzi": "./base.dzi" },
-  "overlay": { "dzi": "./overlay.dzi", "alpha": 0.5, "valueRange": [0,1] }
+  "overlay": { "dzi": "./overlay.dzi", "alpha": 0.5, "valueRange": [0, 1] },
+  "gtIndex": "./gt_patches.json"
 }
 EOF
 
@@ -69,3 +72,4 @@ EOF
 done
 
 echo "All done. slides_index.json built."
+

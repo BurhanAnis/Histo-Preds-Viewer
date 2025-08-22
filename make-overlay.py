@@ -3,6 +3,7 @@ import argparse, pickle, xml.etree.ElementTree as ET
 from pathlib import Path
 import numpy as np
 from PIL import Image
+import json
 
 def heatmap_rgb(v: np.ndarray):
     """
@@ -81,14 +82,17 @@ counts = np.zeros((H2, W2), dtype=np.float32)
 
 P = args.patch_size
 
+tumour = []
 # Rasterize patch probs onto the L2 canvas
-for (y, x, *_), p in zip(patches, probs):
+for (y, x, is_tumour), p in zip(patches, probs):
     y0, x0 = int(y), int(x)
     if y0 >= H2 or x0 >= W2:
         continue
     y1, x1 = min(y0 + P, H2), min(x0 + P, W2)
     canvas[y0:y1, x0:x1] += p
     counts[y0:y1, x0:x1] += 1.0
+    if is_tumour:
+        tumour.append([int(y), int(x)])
 
 # Average where we have coverage
 covered = counts > 0
@@ -107,3 +111,12 @@ else:
 out_png = out_dir / 'overlay.png'
 Image.fromarray(rgba, mode='RGBA').save(out_png)
 print(f"Saved overlay: {out_png} ({W2}x{H2}), alpha_mode={args.alpha_mode}")
+
+gt_json = {
+    "patch_size": int(P),
+    "image_size": [int(H2), int(W2)],  # [H2, W2] for reference
+    "tumour": tumour                   # [[y,x], ...] in L2 pixels
+}
+
+with open(out_dir / "gt_patches.json", "w") as f:
+    json.dump(gt_json, f, separators=(",", ":"))

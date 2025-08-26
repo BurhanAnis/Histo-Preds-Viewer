@@ -1,5 +1,10 @@
 # Whole Slide Imaging Deep Learning Visualiser 
 
+### Demo of Application:
+
+
+https://github.com/user-attachments/assets/ec41ec7e-cd6d-4b40-a2f4-ab8c99dfdef1
+
 
 ## The Problem
 
@@ -34,10 +39,7 @@ The point of this app, at the end of the day, is to make it easy for me to invol
 #### Visualise Incorrect Model Predictions (False Positives and False Negatives)
 <img width="1512" height="774" alt="Screenshot 2025-08-26 at 13 36 12" src="https://github.com/user-attachments/assets/579e8dad-8ae9-4bfc-bf00-7de0779732ee" />
 
-### Demo of Application:
 
-
-https://github.com/user-attachments/assets/ec41ec7e-cd6d-4b40-a2f4-ab8c99dfdef1
 
 
 
